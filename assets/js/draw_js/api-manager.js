@@ -2,7 +2,7 @@
 class ApiManager {
     constructor(diagramTool) {
         this.diagramTool = diagramTool;
-        this.PROXY_URL = "https://guvenfinans.az/proxy.php";
+        this.PROXY_URL = "http://vps.guvenfinans.az:8008";
         this.BACKEND_BASE = "http://vps.guvenfinans.az:8008";
         console.log('🔧 ApiManager initialized');
 

@@ -221,14 +221,14 @@ class TaskManager {
                     // ✅ TOKEN-DƏN GƏLƏN MƏLUMATLARI İSTİFADƏ ET
                     this.userData = {
                         userId: payload.user_id || payload.sub || 134,
-                        companyId: payload.company_id || 51, // ✅ BACKEND-DƏ 51 GÖRÜNÜR
-                        companyCode: payload.company_code || 'GUV26001',
-                        role: payload.role || 'employee',
-                        name: payload.ceo_name || payload.name || 'Əli',
-                        ceoName: payload.ceo_name || 'Əli',
-                        ceoLastName: payload.ceo_lastname || '',
-                        email: payload.ceo_email || payload.email || 'ali.balakishiyev1@gmail.com',
-                        companyName: payload.company_name || 'Guven Finans'
+                        companyId: payload.company_id, // ✅ BACKEND-DƏ 51 GÖRÜNÜR
+                        companyCode: payload.company_code,
+                        role: payload.role,
+                        name: payload.ceo_name || payload.name,
+                        ceoName: payload.ceo_name,
+                        ceoLastName: payload.ceo_lastname,
+                        email: payload.ceo_email || payload.email,
+                        companyName: payload.company_name
                     };
 
                     console.log('✅ TOKEN-DƏN ALINAN USER DATA:', this.userData);

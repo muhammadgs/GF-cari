@@ -15,6 +15,7 @@
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600;700&display=swap"
             rel="stylesheet"
     />
+    <link href="https://cdn.jsdelivr.net/npm/cal-sans@1.0.1/public/web/cal-sans.css" rel="stylesheet" />
     <link rel="stylesheet" href="../assets/css/owner_profile_css/profile.css">
 
     <script>
@@ -23,6 +24,7 @@
                 extend: {
                     fontFamily: {
                         sans: ["Poppins", "ui-sans-serif", "system-ui"],
+                        cal: ['Cal sans','Poppins', 'ui-sans-serif', 'system-ui']
                     },
                     colors: {
                         "brand-blue": "#7DB6FF",
@@ -159,28 +161,34 @@
 
         <!-- Əsas məzmun -->
         <main class="rounded-3xl bg-white p-8 shadow-soft">
-            <section id="homeSection" class="animate-fade-in">
-                <div class="bg-gradient-to-r from-brand-blue to-blue-600 rounded-3xl p-8 text-white mb-8 relative overflow-hidden">
+            <section id="homeSection" class="animate-fade-in h-[clamp(340px,45vh,520px)]">
+                <div class="bg-gradient-to-r from-brand-blue to-blue-600 rounded-3xl p-10 md:p-12 text-white relative overflow-hidden h-full">
                     <div class="absolute right-0 top-0 h-full w-1/2 bg-white/10 skew-x-12 translate-x-20"></div>
-                    <div class="absolute right-10 bottom-[-20px] text-white/20">
+
+                    <div class="absolute right-10 bottom-[-20px] text-white/20 pointer-events-none select-none">
                         <i class="fa-solid fa-handshake text-9xl"></i>
                     </div>
 
                     <div class="relative z-10">
-                <span class="inline-block px-3 py-1 bg-white/20 rounded-lg text-xs font-medium mb-3 backdrop-blur-sm">
-                    İdarəetmə Paneli
-                </span>
-                        <h1 class="text-3xl md:text-4xl font-bold mb-4">
-                            Xoş Gördük, <span id="welcomeOwnerName" class="text-brand-soft underline decoration-dashed underline-offset-4">Hörmətli İstifadəçi</span>! 👋
+                        <span class="inline-block px-3 py-1 bg-white/20 rounded-lg text-xs font-medium mb-3 backdrop-blur-sm">
+                            İdarəetmə Paneli
+                        </span>
+                        <h1 class="font-cal text-4xl md:text-5xl font-bold mb-4 flex flex-wrap items-center gap-3 leading-tight">
+                            <span>
+                              Xoş Gördük,
+                              <span id="welcomeOwnerName" class="text-white font-semibold">Hörmətli İstifadəçi</span>!
+                            </span>
+                            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl backdrop-blur-sm">
+                              <i class="fa-solid fa-handshake ml-2 align-middle text-yellow-300 text-2xl md:text-5xl"></i>
+                            </span>
                         </h1>
                         <p class="text-blue-100 max-w-xl text-lg">
                             Bu gün şirkətinizin idarə edilməsi üçün əla gündür. İşlərinizdə uğurlar arzulayırıq.
                         </p>
-
                     </div>
                 </div>
-
             </section>
+
             <!-- Profil hissəsi -->
             <section id="profileSection" class="hidden">
                 <div class="mb-8">
@@ -951,3 +959,4 @@
     }
 </script>
 </html>
+

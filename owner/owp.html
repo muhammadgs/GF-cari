@@ -971,47 +971,120 @@
     }
 
     async function loadDashboardStats() {
+        const API_BASE_URL = 'http://vps.guvenfinans.az:8008';
+
         const statEmployees = document.getElementById('statEmployees');
         const statCompanies = document.getElementById('statCompanies');
         const statActiveTasks = document.getElementById('statActiveTasks');
         const statMyTasks = document.getElementById('statMyTasks');
 
+        const setStatValue = (el, value) => {
+            if (el) el.innerText = String(value);
+        };
+
         const statElements = [statEmployees, statCompanies, statActiveTasks, statMyTasks];
-        statElements.forEach((element) => {
-            if (element) element.innerText = '...';
-        });
+        statElements.forEach((element) => setStatValue(element, '...'));
 
-        try {
-            const token = localStorage.getItem('guven_token');
-            if (!token) {
-                throw new Error('Token tapılmadı');
-            }
+        const token = localStorage.getItem('guven_token');
+        if (!token) {
+            console.error('Dashboard statistikaları üçün token tapılmadı.');
+            statElements.forEach((element) => setStatValue(element, '0'));
+            return;
+        }
 
-            const apiBaseUrl = window.apiService?.baseUrl || (window.ApiService ? new ApiService().baseUrl : '');
-            const response = await fetch(`${apiBaseUrl}/api/v1/owner/dashboard-stats`, {
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
+        const extractList = (payload) => {
+            if (Array.isArray(payload)) return payload;
+            if (!payload || typeof payload !== 'object') return [];
+
+            if (Array.isArray(payload.data)) return payload.data;
+            if (Array.isArray(payload.results)) return payload.results;
+            if (Array.isArray(payload.items)) return payload.items;
+
+            return [];
+        };
+
+        const extractCount = (payload) => {
+            if (!payload) return 0;
+            if (typeof payload.total === 'number') return payload.total;
+            if (typeof payload.count === 'number') return payload.count;
+            if (typeof payload.total_count === 'number') return payload.total_count;
+
+            return extractList(payload).length;
+        };
+
+        const fetchJson = async (endpoint) => {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
+                headers
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`${endpoint} -> HTTP ${response.status}`);
             }
 
-            const data = await response.json();
+            return response.json();
+        };
 
-            statEmployees.innerText = data.employees_count ?? 0;
-            statCompanies.innerText = data.companies_count ?? 0;
-            statActiveTasks.innerText = data.active_tasks_count ?? 0;
-            statMyTasks.innerText = data.my_tasks_count ?? 0;
-        } catch (error) {
-            console.error('Dashboard statistikaları yüklənmədi:', error);
-            statElements.forEach((element) => {
-                if (element) element.innerText = '0';
-            });
-        }
+        const safeFetchCount = async (endpoint, fallbackValue = '0') => {
+            try {
+                const payload = await fetchJson(endpoint);
+                return extractCount(payload);
+            } catch (error) {
+                console.error(`Stat yüklənmədi (${endpoint}):`, error);
+                return fallbackValue;
+            }
+        };
+
+        const activeTasksPromise = (async () => {
+            try {
+                const summaryPayload = await fetchJson('/api/v1/tasks/stats/summary');
+
+                const summaryCandidates = [
+                    summaryPayload?.active_count,
+                    summaryPayload?.total_active,
+                    summaryPayload?.data?.active_count,
+                    summaryPayload?.data?.total_active
+                ];
+
+                for (const candidate of summaryCandidates) {
+                    if (typeof candidate === 'number') return candidate;
+                }
+
+                const summaryList = extractList(summaryPayload);
+                if (summaryList.length) {
+                    return summaryList.filter((task) => {
+                        const status = String(task?.status || '').toLowerCase();
+                        return status !== 'completed' && status !== 'rejected';
+                    }).length;
+                }
+
+                const tasksPayload = await fetchJson('/api/v1/tasks/');
+                return extractList(tasksPayload).filter((task) => {
+                    const status = String(task?.status || '').toLowerCase();
+                    return status !== 'completed' && status !== 'rejected';
+                }).length;
+            } catch (error) {
+                console.error('Aktiv task statistikası yüklənmədi:', error);
+                return '0';
+            }
+        })();
+
+        const [employeesCount, companiesCount, activeTasksCount, myTasksCount] = await Promise.all([
+            safeFetchCount('/api/v1/employees/'),
+            safeFetchCount('/api/v1/companies/'),
+            activeTasksPromise,
+            safeFetchCount('/api/v1/tasks/my/tasks')
+        ]);
+
+        setStatValue(statEmployees, employeesCount);
+        setStatValue(statCompanies, companiesCount);
+        setStatValue(statActiveTasks, activeTasksCount);
+        setStatValue(statMyTasks, myTasksCount);
     }
 
 
@@ -1041,4 +1114,3 @@
     }
 </script>
 </html>
-

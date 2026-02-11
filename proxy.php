@@ -1,5 +1,5 @@
 <?php
-// proxy.php - FULLY FIXED VERSION
+// proxy.php - FORMDATA FIX VERSION
 
 $target_base = "http://vps.guvenfinans.az:8008";
 
@@ -8,10 +8,24 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = $_SERVER['PATH_INFO'] ?? $_SERVER['REQUEST_URI'];
 $query_string = $_SERVER['QUERY_STRING'] ?? '';
 
+// Əgər /proxy.php ilə başlayırsa, onu çıxar
+if (strpos($path, '/proxy.php') === 0) {
+    $path = substr($path, strlen('/proxy.php'));
+}
+
 // Full URL yarat
 $url = $target_base . $path;
 if ($query_string) {
     $url .= '?' . $query_string;
+}
+
+// DEBUG: FormData varsa log et
+error_log("PROXY DEBUG - Method: $method, Path: $path");
+if (!empty($_FILES)) {
+    error_log("FILES found: " . print_r($_FILES, true));
+}
+if (!empty($_POST)) {
+    error_log("POST found: " . print_r($_POST, true));
 }
 
 // Headers hazırla
@@ -39,19 +53,60 @@ if ($cookies) {
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HEADER, true); // Headers al
+curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 
-// Request body (POST, PUT, PATCH üçün)
-$input = file_get_contents('php://input');
-if ($input && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
-    $headers[] = "Content-Type: application/json";
-    $headers[] = "Content-Length: " . strlen($input);
+// ============ FORMDATA FIX ============
+if ($method === 'POST' && (!empty($_FILES) || !empty($_POST))) {
+    // FormData request-i
+    $postData = [];
+
+    // Faylları əlavə et
+    if (!empty($_FILES)) {
+        foreach ($_FILES as $key => $file) {
+            if (file_exists($file['tmp_name']) && $file['error'] === UPLOAD_ERR_OK) {
+                $postData[$key] = new CURLFile(
+                    $file['tmp_name'],
+                    $file['type'],
+                    $file['name']
+                );
+                error_log("Added file: $key => " . $file['name']);
+            }
+        }
+    }
+
+    // Normal POST data-nı əlavə et
+    if (!empty($_POST)) {
+        foreach ($_POST as $key => $value) {
+            $postData[$key] = $value;
+        }
+    }
+
+    if (!empty($postData)) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        // Content-Type header-i çıxar, çünki CURL avtomatik qoyacaq
+        $headers = array_filter($headers, function($header) {
+            return stripos($header, 'Content-Type:') === false;
+        });
+    }
+} else {
+    // Normal JSON və ya digər request-lər
+    $input = file_get_contents('php://input');
+    if ($input && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
+        // JSON olduğu üçün Content-Type header-i saxla
+        if (!empty($input) && json_decode($input) !== null) {
+            $headers[] = "Content-Type: application/json";
+            $headers[] = "Content-Length: " . strlen($input);
+        }
+    }
 }
+// ============ FORMDATA FIX SONU ============
 
 // Headers təyin et
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+if (!empty($headers)) {
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+}
 
 // SSL problemi olarsa
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -67,6 +122,7 @@ $curl_error = curl_error($ch);
 curl_close($ch);
 
 if ($curl_error) {
+    error_log("CURL Error: $curl_error");
     http_response_code(500);
     echo json_encode(['error' => 'Proxy error: ' . $curl_error]);
     exit;

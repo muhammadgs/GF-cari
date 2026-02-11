@@ -161,7 +161,7 @@
 
         <!-- Əsas məzmun -->
         <main class="rounded-3xl bg-white p-8 shadow-soft">
-            <section id="homeSection" class="animate-fade-in h-[clamp(340px,45vh,520px)]">
+            <section id="homeSection" class="animate-fade-in min-h-[clamp(340px,45vh,520px)]">
                 <div class="bg-gradient-to-r from-brand-blue to-blue-600 rounded-3xl p-10 md:p-12 text-white relative overflow-hidden h-full">
                     <div class="absolute right-0 top-0 h-full w-1/2 bg-white/10 skew-x-12 translate-x-20"></div>
 
@@ -185,6 +185,40 @@
                         <p class="text-blue-100 max-w-xl text-lg">
                             Bu gün şirkətinizin idarə edilməsi üçün əla gündür. İşlərinizdə uğurlar arzulayırıq.
                         </p>
+
+                        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                                <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <p class="text-sm text-blue-100">Total Employees</p>
+                                <p id="statEmployees" class="text-3xl font-bold text-white">...</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                                <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
+                                    <i class="fa-solid fa-building"></i>
+                                </div>
+                                <p class="text-sm text-blue-100">Total Companies</p>
+                                <p id="statCompanies" class="text-3xl font-bold text-white">...</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                                <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
+                                    <i class="fa-solid fa-chart-simple"></i>
+                                </div>
+                                <p class="text-sm text-blue-100">Active Company Tasks</p>
+                                <p id="statActiveTasks" class="text-3xl font-bold text-white">...</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                                <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
+                                    <i class="fa-solid fa-user-tag"></i>
+                                </div>
+                                <p class="text-sm text-blue-100">My Assigned Tasks</p>
+                                <p id="statMyTasks" class="text-3xl font-bold text-white">...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -875,6 +909,9 @@
 
         // 2. Default olaraq "home" bölməsini açmaq
         switchSection('home');
+
+        // 3. Dashboard statistikalarını yüklə
+        loadDashboardStats();
     });
 
     function switchSection(sectionName) {
@@ -932,6 +969,51 @@
             // Məsələn: if(window.loadTasks) window.loadTasks();
         }
     }
+
+    async function loadDashboardStats() {
+        const statEmployees = document.getElementById('statEmployees');
+        const statCompanies = document.getElementById('statCompanies');
+        const statActiveTasks = document.getElementById('statActiveTasks');
+        const statMyTasks = document.getElementById('statMyTasks');
+
+        const statElements = [statEmployees, statCompanies, statActiveTasks, statMyTasks];
+        statElements.forEach((element) => {
+            if (element) element.innerText = '...';
+        });
+
+        try {
+            const token = localStorage.getItem('guven_token');
+            if (!token) {
+                throw new Error('Token tapılmadı');
+            }
+
+            const apiBaseUrl = window.apiService?.baseUrl || (window.ApiService ? new ApiService().baseUrl : '');
+            const response = await fetch(`${apiBaseUrl}/api/v1/owner/dashboard-stats`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            statEmployees.innerText = data.employees_count ?? 0;
+            statCompanies.innerText = data.companies_count ?? 0;
+            statActiveTasks.innerText = data.active_tasks_count ?? 0;
+            statMyTasks.innerText = data.my_tasks_count ?? 0;
+        } catch (error) {
+            console.error('Dashboard statistikaları yüklənmədi:', error);
+            statElements.forEach((element) => {
+                if (element) element.innerText = '0';
+            });
+        }
+    }
+
 
     function updateWelcomeName() {
         // Token və ya localStorage-dan istifadəçi məlumatını yoxlayırıq

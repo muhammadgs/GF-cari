@@ -101,66 +101,68 @@
         </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[240px_1fr]">
-        <!-- Yan menyu -->
-        <aside class="rounded-3xl bg-white p-6 shadow-soft">
-            <h2 class="text-sm font-semibold text-slate-400">İdarəetmə</h2>
+    <div id="mainLayout" class="grid gap-6 lg:grid-cols-[280px_1fr] transition-all duration-300">
+        <aside id="sidebar" class="rounded-3xl bg-white p-6 shadow-soft relative group">
+
+            <button id="sidebarToggle" class="sidebar-toggle-btn">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+
+            <h2 class="sidebar-header-text text-sm font-semibold text-slate-400 whitespace-nowrap transition-opacity duration-300">İdarəetmə</h2>
+
             <nav class="mt-6 space-y-2">
-                <a href="#"
-                   id="navHome"
-                   onclick="switchSection('home')"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold bg-brand-soft text-brand-blue transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-house w-5 text-center"></i>
-                    Giriş
+                <a href="#" id="navHome" onclick="switchSection('home')"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold bg-brand-soft text-brand-blue transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-house w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Giriş</span>
                 </a>
 
-                <a href="#"
-                   id="navProfile"
-                   onclick="switchSection('profile')"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-user w-5 text-center"></i>
-                    Şirkət Profili
+                <a href="#" id="navProfile" onclick="switchSection('profile')"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-user w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Şirkət Profili</span>
                 </a>
 
                 <a href="../diogram/draw.html"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
-                    Diaqram
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-chart-pie w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Diaqram</span>
                 </a>
+
                 <a href="#" onclick="switchSection('task')" id="navTask"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-list-check w-5 text-center"></i>
-                    Task Manager
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-list-check w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Task Manager</span>
                 </a>
-                <a href="#"
-                   id="openEmployeesModalBtn"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-users w-5 text-center"></i>
-                    İşçilərimin Listi
+
+                <a href="#" id="openEmployeesModalBtn"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-users w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">İşçilərimin Listi</span>
                 </a>
-                <a href="#"
-                   id="openCompaniesModalBtn"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-building w-5 text-center"></i>
-                    Şirkətlərimin Listi
+
+                <a href="#" id="openCompaniesModalBtn"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-building w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Şirkətlərimin Listi</span>
                 </a>
-                <a href="#"
-                   id="openPartniorModalBtn"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-handshake w-5 text-center"></i>
-                    Partniyorlar listi
+
+                <a href="#" id="openPartniorModalBtn"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-handshake w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Partniyorlar listi</span>
                 </a>
-                <a href="#"
-                   id="openPermissionsModalBtn"
-                   class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue">
-                    <i class="fa-solid fa-user-shield w-5 text-center"></i>
-                    Departament və İş Növləri
+
+                <a href="#" id="openPermissionsModalBtn"
+                   class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
+                    <i class="fa-solid fa-user-shield w-5 text-center flex-shrink-0"></i>
+                    <span class="nav-text whitespace-nowrap transition-all duration-300">Departament və İş Növləri</span>
                 </a>
             </nav>
         </aside>
 
         <!-- Əsas məzmun -->
-        <main class="rounded-3xl bg-white p-8 shadow-soft">
+        <main class="rounded-[40px] bg-white p-8 shadow-soft">
             <section id="homeSection" class="animate-fade-in min-h-[clamp(340px,45vh,520px)]">
                 <div class="bg-gradient-to-r from-brand-blue to-blue-600 rounded-3xl p-10 md:p-12 text-white relative overflow-hidden h-full">
                     <div class="absolute right-0 top-0 h-full w-1/2 bg-white/10 skew-x-12 translate-x-20"></div>

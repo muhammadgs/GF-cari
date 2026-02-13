@@ -207,7 +207,7 @@ class EmployeesService {
         const departmentFilterOptions = departments.length > 0
             ? departments.map(dept =>
                 `<option value="dept_${dept.id}">${dept.department_name}</option>`
-              ).join('')
+            ).join('')
             : '';
 
         const modalHTML = `
@@ -398,17 +398,17 @@ class EmployeesService {
                     </thead>
                     <tbody>
                         ${employees.map(emp => {
-                            let departmentName = 'Təyin edilməyib';
-                            let departmentId = emp.department_id || emp.departmentId;
-                            
-                            if (departmentId && departments.length > 0) {
-                                const department = departments.find(dept => 
-                                    dept.id == departmentId || dept.department_id == departmentId
-                                );
-                                if (department) departmentName = department.department_name;
-                            }
-                            
-                            return `
+            let departmentName = 'Təyin edilməyib';
+            let departmentId = emp.department_id || emp.departmentId;
+
+            if (departmentId && departments.length > 0) {
+                const department = departments.find(dept =>
+                    dept.id == departmentId || dept.department_id == departmentId
+                );
+                if (department) departmentName = department.department_name;
+            }
+
+            return `
                             <tr class="border-b border-gray-100 hover:bg-gray-50">
                                 <td class="py-3 px-4">
                                     <div class="flex items-center gap-3">
@@ -426,9 +426,9 @@ class EmployeesService {
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="text-sm">${emp.email || emp.ceo_email || '-'}</div>
-                                    ${emp.email_verified ? 
-                                        '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">✓ Təsdiqlənib</span>' : 
-                                        '<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Təsdiqlənməyib</span>'}
+                                    ${emp.email_verified ?
+                '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">✓ Təsdiqlənib</span>' :
+                '<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Təsdiqlənməyib</span>'}
                                 </td>
                                 <td class="py-3 px-4 text-sm">${emp.phone || emp.ceo_phone || '-'}</td>
                                 <td class="py-3 px-4">
@@ -440,9 +440,9 @@ class EmployeesService {
                                     <div class="text-xs text-gray-500">${emp.user_type || ''}</div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    ${emp.is_active === true ? 
-                                        '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Aktiv</span>' : 
-                                        '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Deaktiv</span>'}
+                                    ${emp.is_active === true ?
+                '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Aktiv</span>' :
+                '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Deaktiv</span>'}
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="flex gap-2">
@@ -793,9 +793,9 @@ class EmployeesService {
                 </td>
                 <td class="py-3 px-4">
                     <div class="text-sm">${emp.email || emp.ceo_email || '-'}</div>
-                    ${emp.email_verified ? 
-                        '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">✓ Təsdiqlənib</span>' : 
-                        '<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Təsdiqlənməyib</span>'}
+                    ${emp.email_verified ?
+                '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">✓ Təsdiqlənib</span>' :
+                '<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Təsdiqlənməyib</span>'}
                 </td>
                 <td class="py-3 px-4 text-sm">${emp.phone || emp.ceo_phone || '-'}</td>
                 <td class="py-3 px-4">
@@ -807,9 +807,9 @@ class EmployeesService {
                     <div class="text-xs text-gray-500">${emp.user_type || ''}</div>
                 </td>
                 <td class="py-3 px-4">
-                    ${emp.is_active === true ? 
-                        '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Aktiv</span>' : 
-                        '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Deaktiv</span>'}
+                    ${emp.is_active === true ?
+                '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Aktiv</span>' :
+                '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Deaktiv</span>'}
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex gap-2">
@@ -878,7 +878,7 @@ class EmployeesService {
         const departmentOptions = departments.length > 0
             ? departments.map(dept =>
                 `<option value="${dept.id}">${dept.department_name}</option>`
-              ).join('')
+            ).join('')
             : '<option value="">Departament yoxdur</option>';
 
         const modalHTML = `
@@ -1141,7 +1141,7 @@ class EmployeesService {
                 `<option value="${dept.id}" ${(employee.department_id == dept.id) ? 'selected' : ''}>
                     ${dept.department_name}
                 </option>`
-              ).join('')
+            ).join('')
             : '<option value="">Departament yoxdur</option>';
 
         const modalHTML = `
@@ -1576,16 +1576,16 @@ class EmployeesService {
 
             // Şirkət kodu tap
             let companyCode = this.currentCompanyCode ||
-                             localStorage.getItem('currentCompanyCode') ||
-                             employeeData.company_code;
+                localStorage.getItem('currentCompanyCode') ||
+                employeeData.company_code;
 
             if (!companyCode) {
                 const savedUser = localStorage.getItem('userData');
                 if (savedUser) {
                     const parsedUser = JSON.parse(savedUser);
                     companyCode = parsedUser.user?.company_code ||
-                                  parsedUser.company_code ||
-                                  parsedUser.user?.companyCode;
+                        parsedUser.company_code ||
+                        parsedUser.user?.companyCode;
                 }
 
                 if (!companyCode && window.app?.user) {

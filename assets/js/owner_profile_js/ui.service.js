@@ -10,9 +10,7 @@ class UIService {
     // Form doldurmaq
     populateForm(formData) {
         console.log('📝 Form doldurulur...');
-        console.log('📋 Form data:', formData);
 
-        // ƏSAS DÜZƏLİŞ: Tüm düzgün key-leri map edin
         const fieldMapping = {
             // Şəxsi məlumatlar
             'firstName': formData.firstName || formData.ceo_name || '',
@@ -34,7 +32,7 @@ class UIService {
             'email': formData.email || '',
             'phone': formData.phone || '',
 
-            // ✅ ŞİRKƏT ADI - ƏSAS DÜZƏLİŞ
+            // Şirkət adı
             'company_name': formData.company_name || formData.companyName || formData.originalData?.company_name || '',
 
             // Telegram
@@ -46,15 +44,11 @@ class UIService {
             const element = document.getElementById(key);
             if (element) {
                 element.value = fieldMapping[key];
-                console.log(`✅ ${key} dolduruldu:`, fieldMapping[key]);
-            } else {
-                console.warn(`⚠️ Element tapılmadı: ${key}`);
             }
         });
 
         // Status indikatorlarını yenilə
         this.updateStatusIndicators(formData);
-
         console.log('✅ Form tam dolduruldu');
     }
 
@@ -96,11 +90,11 @@ class UIService {
 
             if (element) {
                 if (indicator.verified) {
-                    element.innerHTML = '<i class="fa-solid fa-check-circle text-green-500"></i><span class="ml-1">Təsdiqlənib</span>';
-                    element.className = 'text-xs font-normal text-green-500';
+                    element.innerHTML = '<i class="fa-solid fa-check-circle text-success-green"></i><span class="ml-1">Təsdiqlənib</span>';
+                    element.className = 'text-xs font-normal text-success-green';
                 } else {
-                    element.innerHTML = '<i class="fa-solid fa-times-circle text-red-500"></i><span class="ml-1">Təsdiqlənməyib</span>';
-                    element.className = 'text-xs font-normal text-red-500';
+                    element.innerHTML = '<i class="fa-solid fa-times-circle text-error-red"></i><span class="ml-1">Təsdiqlənməyib</span>';
+                    element.className = 'text-xs font-normal text-error-red';
                 }
             }
         });
@@ -108,8 +102,6 @@ class UIService {
 
     // Notification göstərmək
     showNotification(message, type = 'success', duration = 4000) {
-        console.log(`📢 ${type.toUpperCase()}: ${message}`);
-
         // Köhnə notifikasiyaları təmizlə
         this.clearNotifications();
 
@@ -145,33 +137,22 @@ class UIService {
             notification.classList.remove('translate-x-full');
         });
 
-        // Array-ə əlavə et
         this.notifications.push(notification.dataset.id);
 
-        // Müddətdən sonra sil
         setTimeout(() => {
             this.removeNotification(notification);
         }, duration);
     }
 
-    // Notification silmək
     removeNotification(notification) {
         notification.classList.add('translate-x-full');
-
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-
-            // Array-dən sil
-            const index = this.notifications.indexOf(notification.dataset.id);
-            if (index > -1) {
-                this.notifications.splice(index, 1);
-            }
         }, 300);
     }
 
-    // Bütün notifikasiyaları təmizləmək
     clearNotifications() {
         document.querySelectorAll('.fixed.top-4.right-4').forEach(notification => {
             this.removeNotification(notification);
@@ -179,7 +160,6 @@ class UIService {
         this.notifications = [];
     }
 
-    // Loading state göstərmək
     setLoading(element, isLoading) {
         if (!element) return;
 
@@ -198,33 +178,23 @@ class UIService {
         }
     }
 
-    // Error mesajlarını göstərmək
     showFormErrors(errors, formId = 'profileForm') {
-        // Köhnə error'ları təmizlə
         this.clearFormErrors(formId);
-
         errors.forEach(error => {
             this.showError(error.field || 'general', error.message);
         });
     }
 
-    // Error göstərmək
     showError(fieldId, message) {
         const field = document.getElementById(fieldId);
         if (!field) return;
 
-        // Error border əlavə et
         field.classList.add('border-red-500');
-
-        // Error mesajı yarat
         const errorElement = document.createElement('div');
         errorElement.className = 'text-red-500 text-sm mt-1';
         errorElement.textContent = message;
-
-        // Error mesajını əlavə et
         field.parentNode.appendChild(errorElement);
 
-        // 5 saniyədən sonra sil
         setTimeout(() => {
             if (errorElement.parentNode) {
                 errorElement.parentNode.removeChild(errorElement);
@@ -233,36 +203,22 @@ class UIService {
         }, 5000);
     }
 
-    // Form error'larını təmizləmək
     clearFormErrors(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
-
-        // Error border'ları sil
-        form.querySelectorAll('.border-red-500').forEach(el => {
-            el.classList.remove('border-red-500');
-        });
-
-        // Error mesajlarını sil
-        form.querySelectorAll('.text-red-500.text-sm.mt-1').forEach(el => {
-            if (el.parentNode) {
-                el.parentNode.removeChild(el);
-            }
-        });
+        form.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+        form.querySelectorAll('.text-red-500.text-sm.mt-1').forEach(el => el.remove());
     }
 
-    // Image göstərmək
     displayImage(file, containerSelector, isRound = false) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const container = document.querySelector(containerSelector);
             if (!container) return;
 
-            // Köhnə şəkli sil
             const oldImg = container.querySelector('img');
             if (oldImg) oldImg.remove();
 
-            // Yeni şəkli əlavə et
             const img = document.createElement('img');
             img.src = e.target.result;
             img.className = 'w-full h-full object-cover';
@@ -278,7 +234,52 @@ class UIService {
         };
         reader.readAsDataURL(file);
     }
-}
+
+    // ✅ SIDEBAR FUNKSİYALARI (İndi Class daxilindədir və 280px istifadə edir)
+    setupSidebar() {
+        console.log('📐 Sidebar UI qurulur...');
+
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const mainLayout = document.getElementById('mainLayout');
+
+        if (!toggleBtn || !mainLayout) {
+            console.warn('⚠️ Sidebar elementləri tapılmadı (HTML-də ID-ləri yoxlayın)');
+            return;
+        }
+
+        // 1. LocalStorage-dan oxu
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            this.setSidebarState(true);
+        }
+
+        // 2. Klik hadisəsi
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isCurrentlyCollapsed = document.body.classList.contains('sidebar-collapsed');
+            this.setSidebarState(!isCurrentlyCollapsed);
+        });
+    }
+
+    setSidebarState(collapsed) {
+        const mainLayout = document.getElementById('mainLayout');
+
+        if (collapsed) {
+            document.body.classList.add('sidebar-collapsed');
+            // 280px-dən 80px-ə
+            mainLayout.classList.remove('lg:grid-cols-[280px_1fr]');
+            mainLayout.classList.add('lg:grid-cols-[80px_1fr]');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            document.body.classList.remove('sidebar-collapsed');
+            // 80px-dən 280px-ə
+            mainLayout.classList.remove('lg:grid-cols-[80px_1fr]');
+            mainLayout.classList.add('lg:grid-cols-[280px_1fr]');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    }
+
+} // Class burada bitir
 
 // Global export
 window.UIService = UIService;

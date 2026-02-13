@@ -50,6 +50,9 @@ class ProfileApp {
             // 3. Header-i dəyişdir (ƏVVƏLCƏ BU)
             this.updateHeaderFinalSolution();
 
+            // ✅ YENİ: Sidebar funksiyasını işə sal
+            this.ui.setupSidebar();
+
             // 4. Profil məlumatlarını yüklə (ŞİRKƏT ADI DA DAXİL)
             console.log('🎯 Profil və şirkət adı yüklənir...');
             await this.loadProfileAndUpdateHeader();
@@ -495,6 +498,41 @@ class ProfileApp {
             const companyData = await this.companiesService.loadCompanyData(this.currentCompanyCode);
         } catch (error) {
 
+        }
+    }
+
+    /**
+     * İşçiləri əsas panelə (Section-a) yükləyən funksiya
+     */
+    /**
+     * İşçiləri əsas panelə (Section-a) yükləyən funksiya (DÜZƏLDİLMİŞ VERSİYA)
+     */
+    /**
+     * İşçiləri əsas panelə (Section-a) yükləyən funksiya
+     */
+    async loadEmployeesToSection() {
+        console.log('👥 İşçilər bölməsi çağırıldı');
+
+        // Xidmətin mövcudluğunu yoxla
+        if (this.employeesService && typeof this.employeesService.loadEmployeesToTable === 'function') {
+            await this.employeesService.loadEmployeesToTable(
+                'mainEmployeesTableBody',
+                'mainEmployeesLoading',
+                'mainEmployeesEmpty'
+            );
+        } else {
+            console.error('❌ EmployeesService və ya loadEmployeesToTable metodu tapılmadı');
+
+            // Fallback (əgər service hazır deyilsə, 500ms sonra yenidən yoxla)
+            setTimeout(() => {
+                if (this.employeesService) {
+                    this.employeesService.loadEmployeesToTable(
+                        'mainEmployeesTableBody',
+                        'mainEmployeesLoading',
+                        'mainEmployeesEmpty'
+                    );
+                }
+            }, 500);
         }
     }
 

@@ -504,7 +504,7 @@ class EmployeesService {
 
         // Yeni işçi əlavə et
         const addBtn = document.getElementById('modalAddEmployeeBtn');
-        if (addBtn) addBtn.addEventListener('click', () => this.openAddEmployeeForm());
+        if (addBtn) addBtn.addEventListener('click', () => this.openAddEmployeeModal());
 
         // Yenilə
         const refreshBtn = document.getElementById('refreshEmployeesBtn');
@@ -512,7 +512,7 @@ class EmployeesService {
 
         // İlk işçi əlavə et
         const addFirstBtn = document.getElementById('addFirstEmployeeBtn');
-        if (addFirstBtn) addFirstBtn.addEventListener('click', () => this.openAddEmployeeForm());
+        if (addFirstBtn) addFirstBtn.addEventListener('click', () => this.openAddEmployeeModal());
 
         // İşçi əməliyyat düymələri
         document.querySelectorAll('.view-employee-btn').forEach(btn => {
@@ -864,8 +864,9 @@ class EmployeesService {
     /**
      * Yeni işçi formu aç
      */
-    async openAddEmployeeForm() {
+    async openAddEmployeeModal() {
         this.closeEditModal();
+        this.closeAddModal();
 
         const companyCode = this.getCurrentCompanyCode();
         if (!companyCode) {
@@ -878,7 +879,7 @@ class EmployeesService {
         const departmentOptions = departments.length > 0
             ? departments.map(dept =>
                 `<option value="${dept.id}">${dept.department_name}</option>`
-            ).join('')
+              ).join('')
             : '<option value="">Departament yoxdur</option>';
 
         const modalHTML = `
@@ -1028,11 +1029,55 @@ class EmployeesService {
             </div>
         `;
 
-        const modalContainer = document.createElement('div');
-        modalContainer.innerHTML = modalHTML;
-        document.body.appendChild(modalContainer);
+        const sectionContainer = document.getElementById('employeesSection');
+        const modalContentContainer = document.querySelector('#employeesModal .inline-block.w-full.max-w-6xl.my-8.text-left.align-middle.transition-all.transform.bg-white.shadow-2xl.rounded-3xl.overflow-hidden.max-h-\[90vh\].flex.flex-col');
+        const hostContainer = sectionContainer || modalContentContainer;
+
+        if (!hostContainer) {
+            this.showErrorMessage('İşçilər bölməsi tapılmadı');
+            return;
+        }
+
+        this.addEmployeeViewState = {
+            hiddenElements: []
+        };
+
+        if (sectionContainer) {
+            Array.from(sectionContainer.children).forEach(child => {
+                if (child.id !== 'addEmployeeEmbeddedView') {
+                    this.addEmployeeViewState.hiddenElements.push({ element: child, previousDisplay: child.style.display });
+                    child.style.display = 'none';
+                }
+            });
+        } else {
+            const tableView = document.querySelector('#employeesModal .flex-1.overflow-auto');
+            const paginationView = document.querySelector('#employeesModal .px-8.py-4.border-t.bg-gray-50');
+            [tableView, paginationView].filter(Boolean).forEach(element => {
+                this.addEmployeeViewState.hiddenElements.push({ element, previousDisplay: element.style.display });
+                element.style.display = 'none';
+            });
+        }
+
+        const parser = document.createElement('div');
+        parser.innerHTML = modalHTML;
+        const formCard = parser.querySelector('#addEmployeeModal > div > div');
+
+        if (!formCard) {
+            this.showErrorMessage('Əlavə etmə formu render olunmadı');
+            return;
+        }
+
+        const embeddedWrapper = document.createElement('div');
+        embeddedWrapper.id = 'addEmployeeEmbeddedView';
+        embeddedWrapper.className = 'w-full';
+        embeddedWrapper.appendChild(formCard);
+        hostContainer.appendChild(embeddedWrapper);
 
         this.bindAddEmployeeEvents();
+    }
+
+    async openAddEmployeeForm() {
+        await this.openAddEmployeeModal();
     }
 
     /**
@@ -1408,8 +1453,27 @@ class EmployeesService {
      * Add modalını bağla
      */
     closeAddModal() {
+        const embeddedView = document.getElementById('addEmployeeEmbeddedView');
+        if (embeddedView) embeddedView.remove();
+
         const addModal = document.getElementById('addEmployeeModal');
         if (addModal) addModal.remove();
+
+        if (this.addEmployeeViewState && Array.isArray(this.addEmployeeViewState.hiddenElements)) {
+            this.addEmployeeViewState.hiddenElements.forEach(({ element, previousDisplay }) => {
+                if (element) {
+                    element.style.display = previousDisplay || '';
+                }
+            });
+        }
+
+        this.addEmployeeViewState = null;
+
+        if (typeof this.loadEmployeesToTable === 'function') {
+            this.loadEmployeesToTable('mainEmployeesTableBody', 'mainEmployeesLoading', 'mainEmployeesEmpty').catch(() => {
+                // Silent fail: modal içi görünüşdə bu elementlər olmaya bilər
+            });
+        }
     }
 
     /**
@@ -1725,6 +1789,8 @@ class EmployeesService {
                         department_id: document.getElementById('addEmployeeDepartment').value || null,
                         position: document.getElementById('addEmployeePosition').value,
                         hire_date: document.getElementById('addEmployeeHireDate').value || null,
+                        salary: document.getElementById('addEmployeeSalary')?.value || null,
+                        bank_account: document.getElementById('addEmployeeBankAccount')?.value || null,
                         is_active: document.getElementById('addEmployeeIsActive').checked,
                         ceo_name: document.getElementById('addEmployeeFirstName').value,
                         ceo_lastname: document.getElementById('addEmployeeLastName').value,

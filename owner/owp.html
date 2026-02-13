@@ -135,7 +135,7 @@
                     <span class="nav-text whitespace-nowrap transition-all duration-300">Task Manager</span>
                 </a>
 
-                <a href="#" id="openEmployeesModalBtn"
+                <a href="#" id="navEmployees" onclick="switchSection('employees')"
                    class="nav-link flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-soft hover:text-brand-blue overflow-hidden">
                     <i class="fa-solid fa-users w-5 text-center flex-shrink-0"></i>
                     <span class="nav-text whitespace-nowrap transition-all duration-300">İşçilərimin Listi</span>
@@ -480,6 +480,10 @@
             </section>
             <section id="taskSection" class="hidden h-[calc(100vh-140px)]">
                 <iframe src="../task/task.html" class="w-full h-full rounded-3xl border-0" title="Task Manager"></iframe>
+            </section>
+
+            <section id="employeesSection" class="hidden h-[calc(100vh-140px)]">
+                <iframe src="./employees-inline.html" class="w-full h-full rounded-3xl border-0" title="İşçilərimin Listi"></iframe>
             </section>
         </main>
     </div>
@@ -918,8 +922,8 @@
     });
 
     function switchSection(sectionName) {
-        const sections = ['homeSection', 'profileSection', 'companySettingsSection', 'taskSection'];
-        const navs = ['navHome', 'navProfile', 'navTask'];
+        const sections = ['homeSection', 'profileSection', 'companySettingsSection', 'taskSection', 'employeesSection'];
+        const navs = ['navHome', 'navProfile', 'navTask', 'navEmployees'];
         const activeClasses = ['bg-brand-soft', 'text-brand-blue'];
         const inactiveClasses = ['text-slate-600'];
 

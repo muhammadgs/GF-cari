@@ -169,6 +169,34 @@ class EmployeesService {
     }
 
     /**
+     * İşçilər panelini səhifə daxilində göstər (inline/iframe üçün)
+     */
+    async openEmployeesEmbedded(containerId = 'employeesEmbeddedContainer') {
+        try {
+            console.log('👥 İşçilər inline paneli açılır...');
+
+            const companyCode = this.getCurrentCompanyCode();
+            if (!companyCode) throw new Error('Şirkət kodu tapılmadı');
+
+            const [employees, departments] = await Promise.all([
+                this.getAllEmployees(companyCode),
+                this.getCompanyDepartments(companyCode)
+            ]);
+
+            this.createEmployeesModal(employees, companyCode, departments, {
+                embedded: true,
+                containerId
+            });
+            this.bindModalEvents();
+
+            console.log('✅ İşçilər inline paneli hazır');
+        } catch (error) {
+            console.error('❌ İşçilər inline paneli açılarkən xəta:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Cari şirkət kodunu tap
      */
     getCurrentCompanyCode() {
@@ -197,8 +225,10 @@ class EmployeesService {
     /**
      * İşçilər modalını yarat
      */
-    createEmployeesModal(employees, companyCode, departments = []) {
+    createEmployeesModal(employees, companyCode, departments = [], options = {}) {
         this.closeEmployeesModal();
+
+        const isEmbedded = options.embedded === true;
 
         const departmentsInfo = departments.length > 0
             ? `<div class="text-xs text-blue-600 mt-1">${departments.length} departament mövcuddur</div>`
@@ -211,8 +241,8 @@ class EmployeesService {
             : '';
 
         const modalHTML = `
-            <div id="employeesModal" class="fixed inset-y-0 right-0 z-[100] w-full max-w-6xl overflow-y-auto p-4 md:p-6">
-                <div id="employeesPanelContent" class="w-full text-left transition-all transform bg-white shadow-2xl rounded-3xl overflow-hidden h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] flex flex-col ml-auto">
+            <div id="employeesModal" class="${isEmbedded ? 'h-full w-full overflow-y-auto' : 'fixed inset-y-0 right-0 z-[100] w-full max-w-6xl overflow-y-auto p-4 md:p-6'}">
+                <div id="employeesPanelContent" class="w-full text-left transition-all transform bg-white shadow-2xl rounded-3xl overflow-hidden ${isEmbedded ? 'h-full' : 'h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] ml-auto'} flex flex-col">
                         <!-- Modal Header -->
                         <div class="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-6">
                             <div class="flex items-center justify-between">
@@ -234,10 +264,12 @@ class EmployeesService {
                                         <i class="fa-solid fa-user-plus"></i>
                                         Yeni İşçi
                                     </button>
+                                    ${isEmbedded ? '' : `
                                     <button id="closeEmployeesModalBtn"
                                             class="h-12 w-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
                                         <i class="fa-solid fa-times text-gray-600 text-lg"></i>
                                     </button>
+                                    `}
                                 </div>
                             </div>
 
@@ -357,7 +389,17 @@ class EmployeesService {
 
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHTML;
-        document.body.appendChild(modalContainer);
+
+        if (isEmbedded) {
+            const mountNode = document.getElementById(options.containerId || 'employeesEmbeddedContainer');
+            if (!mountNode) {
+                throw new Error(`Container tapılmadı: ${options.containerId || 'employeesEmbeddedContainer'}`);
+            }
+            mountNode.innerHTML = '';
+            mountNode.appendChild(modalContainer.firstElementChild);
+        } else {
+            document.body.appendChild(modalContainer);
+        }
 
         const modal = document.getElementById('employeesModal');
         if (modal) modal.classList.remove('hidden');

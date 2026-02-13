@@ -291,56 +291,42 @@ class ProfileApp {
     /**
      * Header elementlərini tap və dəyiş
      */
+    /**
+     * Header elementlərini ve Selamlama Mesajını tap ve dəyiş
+     */
     updateHeaderElements(companyName, userName) {
         try {
-            console.log('🔍 Header elementləri axtarılır...');
+            console.log('🔍 İsim alanları güncelleniyor:', userName);
 
-            // 1. Header-dakı user info div-i tap
-            const userInfoDiv = document.querySelector('.flex.items-center.gap-3.rounded-2xl.bg-white.px-4.py-2.shadow-soft');
-
-            if (userInfoDiv) {
-                console.log('✅ User info div tapıldı');
-
-                // Div içindəki p elementlərini tap
-                const pElements = userInfoDiv.querySelectorAll('p');
-
-                // Şirkət adı (ilk p elementi)
-                if (pElements[0]) {
-                    console.log(`Şirkət adı dəyişdirilir: "${pElements[0].textContent}" → "${companyName}"`);
-                    pElements[0].textContent = companyName;
-                }
-
-                // User adı (ikinci p elementi)
-                if (pElements[1]) {
-                    console.log(`User adı dəyişdirilir: "${pElements[1].textContent}" → "${userName}"`);
-                    pElements[1].textContent = userName;
-                }
-
-                console.log('✅ Header uğurla dəyişdirildi');
-                return;
+            // 1. HEADER (Sağ Üst) Profil İsmi
+            const headerNameEl = document.getElementById('userNameDisplay');
+            if (headerNameEl) {
+                headerNameEl.textContent = userName;
             }
 
-            console.log('❌ User info div tapılmadı, alternativ axtarış...');
+            // 2. HEADER Şirket İsmi
+            const headerCompanyEl = document.getElementById('companyNameDisplay');
+            if (headerCompanyEl && companyName) {
+                headerCompanyEl.textContent = companyName;
+            }
 
-            // 2. Əgər div tapılmadısa, bütün p elementlərində axtar
-            document.querySelectorAll('p').forEach((p, index) => {
-                const text = p.textContent.trim();
+            // 3. WELCOME (Büyük Selamlama) İsmi - [ÇAKIŞMAYI ÖNLEYEN KISIM]
+            const welcomeNameEl = document.getElementById('welcomeOwnerName');
+            if (welcomeNameEl) {
+                welcomeNameEl.textContent = userName;
+            }
 
-                // "Sahibkar" yazanı tap
-                if (text === 'Sahibkar') {
-                    console.log(`✅ "Sahibkar" tapıldı və dəyişdirilir (element ${index})`);
-                    p.textContent = userName;
-                }
-
-                // "Güvən Finans" yazanı tap
-                if (text === 'Güvən Finans') {
-                    console.log(`✅ "Güvən Finans" tapıldı və dəyişdirilir (element ${index})`);
-                    p.textContent = companyName;
-                }
-            });
+            // 4. Alternatif: Eğer ID ile bulunamazsa class ve text içeriğine göre ara (Yedek)
+            if (!headerNameEl || !welcomeNameEl) {
+                document.querySelectorAll('p, span').forEach(el => {
+                    if (el.textContent.trim() === 'Sahibkar' || el.textContent.trim() === 'Hörmətli İstifadəçi') {
+                        el.textContent = userName;
+                    }
+                });
+            }
 
         } catch (error) {
-            console.error('❌ Header elements update xətası:', error);
+            console.error('❌ Element güncelleme hatası:', error);
         }
     }
 

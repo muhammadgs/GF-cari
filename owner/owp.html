@@ -1058,18 +1058,48 @@
     }
 
     function updateWelcomeName() {
-        setTimeout(() => {
-            const displayName = document.getElementById('userNameDisplay');
-            let nameToShow = "Hörmətli İstifadəçi";
+        // 1. LocalStorage'dan veriyi güvenli şekilde çek
+        const savedData = localStorage.getItem(API_CONFIG.userKey);
+        let nameToShow = "Hörmətli İstifadəçi"; // Varsayılan
+        let companyToShow = "Şirkət Adı";
 
-            if (firstNameInput && firstNameInput.value) {
-                nameToShow = firstNameInput.value + (lastNameInput.value ? ' ' + lastNameInput.value : '');
-            } else if (displayName && displayName.textContent !== "Adınızı qeyd edin") {
-                nameToShow = displayName.textContent;
+        if (savedData) {
+            try {
+                const parsed = JSON.parse(savedData);
+                const user = parsed.user || parsed; // Bazen user objesi iç içe olabilir
+
+                // İsim önceliği: CEO Adı > Normal Ad > Kullanıcı Adı
+                if (user.ceo_name && user.ceo_lastname) {
+                    nameToShow = user.ceo_name + ' ' + user.ceo_lastname;
+                } else if (user.first_name && user.last_name) {
+                    nameToShow = user.first_name + ' ' + user.last_name;
+                } else if (user.name) {
+                    nameToShow = user.name;
+                }
+
+                if (user.company_name) {
+                    companyToShow = user.company_name;
+                }
+            } catch (e) {
+                console.error("LocalStorage okuma hatası:", e);
             }
-            const el = document.getElementById('welcomeOwnerName');
-            if(el) el.textContent = nameToShow;
-        }, 1000);
+        }
+
+        // 2. Her iki alanı da AYNI veriyle güncelle (Çakışmayı önler)
+
+        // A. Büyük Selamlama Alanı
+        const welcomeEl = document.getElementById('welcomeOwnerName');
+        if (welcomeEl) welcomeEl.textContent = nameToShow;
+
+        // B. Sağ Üst Profil Alanı
+        const headerNameEl = document.getElementById('userNameDisplay');
+        if (headerNameEl) headerNameEl.textContent = nameToShow;
+
+        // C. Şirket Adı
+        const headerCompanyEl = document.getElementById('companyNameDisplay');
+        if (headerCompanyEl && companyToShow !== "Şirkət Adı") {
+            headerCompanyEl.textContent = companyToShow;
+        }
     }
 </script>
 </html>

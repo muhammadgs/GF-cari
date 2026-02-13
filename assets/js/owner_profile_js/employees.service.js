@@ -211,9 +211,8 @@ class EmployeesService {
             : '';
 
         const modalHTML = `
-            <div id="employeesModal" class="fixed inset-0 z-[100] overflow-y-auto bg-black bg-opacity-50">
-                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
-                    <div class="inline-block w-full max-w-6xl my-8 text-left align-middle transition-all transform bg-white shadow-2xl rounded-3xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div id="employeesModal" class="fixed inset-y-0 right-0 z-[100] w-full max-w-6xl overflow-y-auto p-4 md:p-6">
+                <div id="employeesPanelContent" class="w-full text-left transition-all transform bg-white shadow-2xl rounded-3xl overflow-hidden h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] flex flex-col ml-auto">
                         <!-- Modal Header -->
                         <div class="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-6">
                             <div class="flex items-center justify-between">
@@ -299,7 +298,7 @@ class EmployeesService {
                         </div>
 
                         <!-- Modal Body -->
-                        <div class="flex-1 overflow-hidden flex flex-col">
+                        <div id="employeesBodyContent" class="flex-1 overflow-hidden flex flex-col">
                             <!-- Axtarış və filter -->
                             <div class="px-8 py-6 bg-gray-50 border-b">
                                 <div class="flex flex-col md:flex-row gap-4">
@@ -330,14 +329,14 @@ class EmployeesService {
                             </div>
 
                             <!-- İşçilər cədvəli -->
-                            <div class="flex-1 overflow-auto">
+                            <div id="employeesTableView" class="flex-1 overflow-auto">
                                 <div class="px-8 py-6">
                                     ${this.renderEmployeesTable(employees, departments)}
                                 </div>
                             </div>
 
                             <!-- Pagination -->
-                            <div class="px-8 py-4 border-t bg-gray-50">
+                            <div id="employeesPaginationView" class="px-8 py-4 border-t bg-gray-50">
                                 <div class="flex items-center justify-between">
                                     <div class="text-sm text-gray-600">
                                         <span id="showingText">1-${employees.length} of ${employees.length}</span>
@@ -352,7 +351,6 @@ class EmployeesService {
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
         `;
@@ -475,17 +473,12 @@ class EmployeesService {
             closeBtn.addEventListener('click', () => this.closeEmployeesModal());
         }
 
-        // Modal overlay
+        // Panel mövcudluğu
         const modal = document.getElementById('employeesModal');
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) this.closeEmployeesModal();
-            });
-        }
 
         // Escape klaviatura
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            if (e.key === 'Escape' && modal) {
                 this.closeEmployeesModal();
             }
         });
@@ -1030,7 +1023,7 @@ class EmployeesService {
         `;
 
         const sectionContainer = document.getElementById('employeesSection');
-        const modalContentContainer = document.querySelector('#employeesModal .inline-block.w-full.max-w-6xl.my-8.text-left.align-middle.transition-all.transform.bg-white.shadow-2xl.rounded-3xl.overflow-hidden.max-h-\[90vh\].flex.flex-col');
+        const modalContentContainer = document.getElementById('employeesPanelContent');
         const hostContainer = sectionContainer || modalContentContainer;
 
         if (!hostContainer) {
@@ -1050,8 +1043,8 @@ class EmployeesService {
                 }
             });
         } else {
-            const tableView = document.querySelector('#employeesModal .flex-1.overflow-auto');
-            const paginationView = document.querySelector('#employeesModal .px-8.py-4.border-t.bg-gray-50');
+            const tableView = document.getElementById('employeesTableView');
+            const paginationView = document.getElementById('employeesPaginationView');
             [tableView, paginationView].filter(Boolean).forEach(element => {
                 this.addEmployeeViewState.hiddenElements.push({ element, previousDisplay: element.style.display });
                 element.style.display = 'none';

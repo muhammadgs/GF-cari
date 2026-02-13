@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>İşçilərimin Listi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        html, body { height: 100%; }
+        body { margin: 0; background: transparent; }
+    </style>
+</head>
+<body>
+<div id="employeesEmbeddedContainer" class="h-screen w-full"></div>
+
+<script src="../assets/js/owner_profile_js/api.service.js"></script>
+<script src="../assets/js/owner_profile_js/employees.service.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const api = new ApiService();
+            const employeesService = new EmployeesService(api);
+            await employeesService.openEmployeesEmbedded('employeesEmbeddedContainer');
+        } catch (error) {
+            const container = document.getElementById('employeesEmbeddedContainer');
+            if (container) {
+                container.innerHTML = `<div class="h-full flex items-center justify-center text-red-600 font-medium">İşçilər paneli yüklənmədi: ${error.message}</div>`;
+            }
+            console.error(error);
+        }
+    });
+</script>
+</body>
+</html>

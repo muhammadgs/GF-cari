@@ -52,7 +52,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-semibold">Güvən Finans</h1>
-                <p class="text-sm text-slate-500">Güvənlə Başla</p>
+                <p class="text-sm text-slate-500">İnnovativ maliyyə həlləri</p>
             </div>
         </div>
 
@@ -902,215 +902,174 @@
 
 </body>
 <script>
-    // Səhifə yüklənəndə işə düşür
+    // 1. Konfiqurasiya
+    const API_CONFIG = {
+        baseUrl: 'https://guvenfinans.az/proxy.php',
+        tokenKey: 'guven_token',
+        userKey: 'userData'
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
-        // 1. Salamlama üçün adı çəkmək
         updateWelcomeName();
-
-        // 2. Default olaraq "home" bölməsini açmaq
         switchSection('home');
-
-        // 3. Dashboard statistikalarını yüklə
         loadDashboardStats();
     });
 
     function switchSection(sectionName) {
-        const homeSec = document.getElementById('homeSection');
-        const profileSec = document.getElementById('profileSection');
-        const settingsSec = document.getElementById('companySettingsSection');
-        const taskSec = document.getElementById('taskSection'); // YENİ
-
-        const navHome = document.getElementById('navHome');
-        const navProfile = document.getElementById('navProfile');
-        const navTask = document.getElementById('navTask'); // YENİ
-
-        // Bütün menyu aktivliklərini sıfırla
+        const sections = ['homeSection', 'profileSection', 'companySettingsSection', 'taskSection'];
+        const navs = ['navHome', 'navProfile', 'navTask'];
         const activeClasses = ['bg-brand-soft', 'text-brand-blue'];
         const inactiveClasses = ['text-slate-600'];
 
-        // Helper funksiya
-        const setNavState = (navEl, isActive) => {
-            if(isActive) {
-                navEl.classList.add(...activeClasses);
-                navEl.classList.remove(...inactiveClasses);
-            } else {
-                navEl.classList.remove(...activeClasses);
-                navEl.classList.add(...inactiveClasses);
+        sections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
+        navs.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove(...activeClasses);
+                el.classList.add(...inactiveClasses);
             }
-        };
+        });
 
-        // Bölmələri gizlət
-        homeSec.classList.add('hidden');
-        profileSec.classList.add('hidden');
-        settingsSec.classList.add('hidden');
-        if(taskSec) taskSec.classList.add('hidden');
+        const activeSection = document.getElementById(sectionName + 'Section');
+        if (activeSection) activeSection.classList.remove('hidden');
 
-        // Müvafiq bölməni göstər
-        if (sectionName === 'home') {
-            homeSec.classList.remove('hidden');
-            setNavState(navHome, true);
-            setNavState(navProfile, false);
-            if(navTask) setNavState(navTask, false);
-
-        } else if (sectionName === 'profile') {
-            profileSec.classList.remove('hidden');
-            settingsSec.classList.remove('hidden');
-            setNavState(navProfile, true);
-            setNavState(navHome, false);
-            if(navTask) setNavState(navTask, false);
-
-        } else if (sectionName === 'task') { // YENİ
-            taskSec.classList.remove('hidden');
-            setNavState(navTask, true);
-            setNavState(navHome, false);
-            setNavState(navProfile, false);
-
-            // Task məlumatlarını yükləmək üçün funksiyanı çağırırıq (əgər task.js-də varsa)
-            // Məsələn: if(window.loadTasks) window.loadTasks();
+        const activeNav = document.getElementById('nav' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1));
+        if (activeNav) {
+            activeNav.classList.remove('text-slate-600');
+            activeNav.classList.add('bg-brand-soft', 'text-brand-blue');
         }
     }
 
+    // --- DASHBOARD STATİSTİKA (USER ID DÜZƏLİŞİ İLƏ) ---
     async function loadDashboardStats() {
-        const API_BASE_URL = 'http://vps.guvenfinans.az:8008';
-
-        const statEmployees = document.getElementById('statEmployees');
-        const statCompanies = document.getElementById('statCompanies');
-        const statActiveTasks = document.getElementById('statActiveTasks');
-        const statMyTasks = document.getElementById('statMyTasks');
-
-        const setStatValue = (el, value) => {
-            if (el) el.innerText = String(value);
+        const els = {
+            emp: document.getElementById('statEmployees'),
+            comp: document.getElementById('statCompanies'),
+            active: document.getElementById('statActiveTasks'),
+            mine: document.getElementById('statMyTasks')
         };
 
-        const statElements = [statEmployees, statCompanies, statActiveTasks, statMyTasks];
-        statElements.forEach((element) => setStatValue(element, '...'));
+        Object.values(els).forEach(el => { if(el) el.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i>'; });
 
-        const token = localStorage.getItem('guven_token');
+        const token = localStorage.getItem(API_CONFIG.tokenKey);
         if (!token) {
-            console.error('Dashboard statistikaları üçün token tapılmadı.');
-            statElements.forEach((element) => setStatValue(element, '0'));
+            console.error("Token yoxdur!");
             return;
         }
 
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
+        // ==========================================
+        // 1. İSTİFADƏÇİ MƏLUMATLARINI DƏQİQ TAPMAQ
+        // ==========================================
+        let companyCode = null;
+        let currentUserId = null;
+
+        // A. LocalStorage-dan yoxla
+        try {
+            const userData = JSON.parse(localStorage.getItem(API_CONFIG.userKey));
+            if (userData) {
+                companyCode = userData.user?.company_code || userData.company_code || userData.user?.companyCode;
+                currentUserId = userData.user?.id || userData.id;
+            }
+        } catch (e) { console.error("LocalStorage parse error", e); }
+
+        // B. Əgər ID tapılmadısa, Tokeni Decode et (Ən etibarlı yol)
+        if (!currentUserId && token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const payload = JSON.parse(jsonPayload);
+
+                // Token içindəki ID sahələrini yoxla (sub, user_id, id)
+                currentUserId = payload.sub || payload.user_id || payload.id;
+
+                // Əgər company code yoxdursa, onu da tokendən götür
+                if (!companyCode) companyCode = payload.company_code;
+
+                console.log("Token-dən çıxarılan ID:", currentUserId);
+            } catch (e) { console.error("Token decode error", e); }
+        }
+
+        console.log("Active User ID:", currentUserId); // Konsolda yoxlamaq üçün
+
+        const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+
+        // === UNIVERSAL DATA ÇƏKMƏ FUNKSİYASI ===
+        const fetchData = async (endpoint) => {
+            try {
+                const res = await fetch(`${API_CONFIG.baseUrl}${endpoint}`, { method: 'GET', headers });
+                if (!res.ok) return [];
+                const data = await res.json();
+
+                // Datanı array formatına salır
+                if (data.sub_companies) return data.sub_companies;
+                if (data.data && Array.isArray(data.data)) return data.data;
+                if (Array.isArray(data)) return data;
+                if (data.items && Array.isArray(data.items)) return data.items;
+
+                return [];
+            } catch (e) {
+                console.error(`Error ${endpoint}:`, e);
+                return [];
+            }
         };
 
-        const extractList = (payload) => {
-            if (Array.isArray(payload)) return payload;
-            if (!payload || typeof payload !== 'object') return [];
+        // --- SORĞULAR ---
 
-            if (Array.isArray(payload.data)) return payload.data;
-            if (Array.isArray(payload.results)) return payload.results;
-            if (Array.isArray(payload.items)) return payload.items;
+        // 1. İŞÇİLƏRİN SAYI
+        if (companyCode) {
+            fetchData(`/api/v1/users/company/${companyCode}`).then(list => els.emp.innerText = list.length);
+        } else {
+            els.emp.innerText = "0";
+        }
 
-            return [];
-        };
+        // 2. ŞİRKƏTLƏRİN SAYI
+        if (companyCode) {
+            fetchData(`/api/v1/companies/${companyCode}/sub-companies`).then(list => els.comp.innerText = list.length);
+        } else {
+            fetchData('/api/v1/companies/').then(list => els.comp.innerText = list.length);
+        }
 
-        const extractCount = (payload) => {
-            if (!payload) return 0;
-            if (typeof payload.total === 'number') return payload.total;
-            if (typeof payload.count === 'number') return payload.count;
-            if (typeof payload.total_count === 'number') return payload.total_count;
+        // 3. AKTİV İŞLƏR & 4. MƏNİM TAPŞIRIQLARIM (BİR SORĞU İLƏ)
+        // Bütün işləri çəkirik və JS tərəfdə filtr edirik
+        fetchData('/api/v1/tasks/').then(allTasks => {
 
-            return extractList(payload).length;
-        };
-
-        const fetchJson = async (endpoint) => {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: 'GET',
-                headers
+            // A. Ümumi Aktiv İşlər
+            const activeTasks = allTasks.filter(task => {
+                const status = String(task.status || '').toLowerCase();
+                return status !== 'completed' && status !== 'rejected' && status !== 'cancelled';
             });
+            if(els.active) els.active.innerText = activeTasks.length;
 
-            if (!response.ok) {
-                throw new Error(`${endpoint} -> HTTP ${response.status}`);
+            // B. Mənim İcra Etdiyim İşlər
+            if (currentUserId) {
+                const myTasks = activeTasks.filter(task => {
+                    // İcraçı ID-si mənim ID-mə bərabərdirmi? (String/Int fərqini nəzərə alaraq ==)
+                    return task.executor_user_id == currentUserId;
+                });
+                if(els.mine) els.mine.innerText = myTasks.length;
+            } else {
+                // ID tapılmasa 'My Tasks' endpointini yoxla (Plan B)
+                fetchData('/api/v1/tasks/my/tasks').then(list => els.mine.innerText = list.length);
             }
-
-            return response.json();
-        };
-
-        const safeFetchCount = async (endpoint, fallbackValue = '0') => {
-            try {
-                const payload = await fetchJson(endpoint);
-                return extractCount(payload);
-            } catch (error) {
-                console.error(`Stat yüklənmədi (${endpoint}):`, error);
-                return fallbackValue;
-            }
-        };
-
-        const activeTasksPromise = (async () => {
-            try {
-                const summaryPayload = await fetchJson('/api/v1/tasks/stats/summary');
-
-                const summaryCandidates = [
-                    summaryPayload?.active_count,
-                    summaryPayload?.total_active,
-                    summaryPayload?.data?.active_count,
-                    summaryPayload?.data?.total_active
-                ];
-
-                for (const candidate of summaryCandidates) {
-                    if (typeof candidate === 'number') return candidate;
-                }
-
-                const summaryList = extractList(summaryPayload);
-                if (summaryList.length) {
-                    return summaryList.filter((task) => {
-                        const status = String(task?.status || '').toLowerCase();
-                        return status !== 'completed' && status !== 'rejected';
-                    }).length;
-                }
-
-                const tasksPayload = await fetchJson('/api/v1/tasks/');
-                return extractList(tasksPayload).filter((task) => {
-                    const status = String(task?.status || '').toLowerCase();
-                    return status !== 'completed' && status !== 'rejected';
-                }).length;
-            } catch (error) {
-                console.error('Aktiv task statistikası yüklənmədi:', error);
-                return '0';
-            }
-        })();
-
-        const [employeesCount, companiesCount, activeTasksCount, myTasksCount] = await Promise.all([
-            safeFetchCount('/api/v1/employees/'),
-            safeFetchCount('/api/v1/companies/'),
-            activeTasksPromise,
-            safeFetchCount('/api/v1/tasks/my/tasks')
-        ]);
-
-        setStatValue(statEmployees, employeesCount);
-        setStatValue(statCompanies, companiesCount);
-        setStatValue(statActiveTasks, activeTasksCount);
-        setStatValue(statMyTasks, myTasksCount);
+        });
     }
 
-
     function updateWelcomeName() {
-        // Token və ya localStorage-dan istifadəçi məlumatını yoxlayırıq
-        // Sizin sisteminizdə yəqin ki, ad 'userNameDisplay' elementinə yazılır
-        // Biz onu ordan kopyalaya və ya birbaşa API-dən ala bilərik.
-
-        // Metod 1: Mövcud display elementindən götürmək (Sizin JS yüklənəndən sonra)
         setTimeout(() => {
-            const firstNameInput = document.getElementById('firstName');
-            const lastNameInput = document.getElementById('lastName');
             const displayName = document.getElementById('userNameDisplay');
-
             let nameToShow = "Hörmətli İstifadəçi";
 
             if (firstNameInput && firstNameInput.value) {
-                // Əgər input doludursa oradan götür
                 nameToShow = firstNameInput.value + (lastNameInput.value ? ' ' + lastNameInput.value : '');
             } else if (displayName && displayName.textContent !== "Adınızı qeyd edin") {
-                // Headerdəki addan götür
                 nameToShow = displayName.textContent;
             }
-
-            document.getElementById('welcomeOwnerName').textContent = nameToShow;
-        }, 1000); // API məlumatlarının dolmasını gözləmək üçün kiçik gecikmə
+            const el = document.getElementById('welcomeOwnerName');
+            if(el) el.textContent = nameToShow;
+        }, 1000);
     }
 </script>
 </html>

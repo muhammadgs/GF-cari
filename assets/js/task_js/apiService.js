@@ -1,4 +1,4 @@
-const API_BASE = "http://vps.guvenfinans.az:8008";
+const API_BASE = "https://guvenfinans.az/proxy.php";
 
 // API Sorğu Funksiyası
 async function makeApiRequest(endpoint, method = 'GET', data = null, requiresAuth = true) {
